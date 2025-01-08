@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Conversation Viewer</title>
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --primary-light: #e3f2fd;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #333333;
+            --border: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .session-info {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: var(--surface);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.dragover {
+            background: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .drop-zone h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .conversation {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .requests-list {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            display: flex;
+            gap: 10px;
+        }
+
+        .interaction-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            background: var(--surface);
+            min-width: 120px;
+        }
+
+        .interaction-item:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .interaction-item.selected {
+            background: var(--primary-light);
+            border-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .interaction-time {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .content-container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 300px);
+        }
+
+        .prompt, .response {
+            flex: 1;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .prompt h3, .response h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .metadata {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .metadata-item {
+            margin: 5px 0;
+        }
+
+        .metadata-label {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .metadata-value {
+            margin-left: 5px;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1565c0;
+        }
+
+        /* Добавляем стили для скроллбара в основном контенте */
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LLM Conversation Viewer</h1>
+            <div class="session-info" id="sessionInfo"></div>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <h2>Перетащите файл лога сюда</h2>
+            <p>или нажмите для выбора файла</p>
+            <input type="file" id="fileInput" style="display: none" accept=".json">
+        </div>
+        
+        <div class="conversation" id="conversation">
+            <div class="requests-list" id="interactionList"></div>
+            <div class="content-container">
+                <div class="prompt fade-in">
+                    <h3>Запрос</h3>
+                    <div class="content-scroll">
+                        <pre id="promptContent"></pre>
+                        <div class="metadata" id="promptMetadata"></div>
+                    </div>
+                </div>
+                <div class="response fade-in">
+                    <h3>Ответ</h3>
+                    <div class="content-scroll">
+                        <pre id="responseContent"></pre>
+                        <div class="metadata" id="responseMetadata"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const conversation = document.getElementById('conversation');
+        const interactionList = document.getElementById('interactionList');
+        const promptContent = document.getElementById('promptContent');
+        const responseContent = document.getElementById('responseContent');
+        const promptMetadata = document.getElementById('promptMetadata');
+        const responseMetadata = document.getElementById('responseMetadata');
+        const sessionInfo = document.getElementById('sessionInfo');
+        
+        let conversationData = null;
+        
+        // Обработка drag & drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadFile(file);
+        });
+        
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadFile(file);
+        });
+        
+        function loadFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    conversationData = JSON.parse(e.target.result);
+                    displayConversation();
+                } catch (error) {
+                    alert('Ошибка при чтении файла: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function displayConversation() {
+            conversation.style.display = 'flex';
+            interactionList.innerHTML = '';
+            
+            // Отображаем информацию о сессии
+            const startTime = new Date(conversationData.start_time).toLocaleString();
+            sessionInfo.innerHTML = `
+                <strong>ID сессии:</strong> ${conversationData.session_id}<br>
+                <strong>Начало:</strong> ${startTime}<br>
+                <strong>Количество взаимодействий:</strong> ${conversationData.interactions.length}
+            `;
+            
+            conversationData.interactions.forEach((interaction, index) => {
+                const item = document.createElement('div');
+                item.className = 'interaction-item fade-in';
+                const time = new Date(interaction.timestamp).toLocaleTimeString();
+                item.innerHTML = `
+                    Запрос ${index + 1}
+                    <div class="interaction-time">${time}</div>
+                `;
+                item.onclick = () => displayInteraction(interaction, item);
+                interactionList.appendChild(item);
+            });
+            
+            if (conversationData.interactions.length > 0) {
+                displayInteraction(conversationData.interactions[0], interactionList.firstChild);
+            }
+        }
+        
+        function displayInteraction(interaction, element) {
+            // Подсвечиваем выбранный элемент
+            document.querySelectorAll('.interaction-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            // Отображаем данные взаимодействия
+            promptContent.textContent = interaction.prompt;
+            
+            // Форматируем ответ в зависимости от типа
+            if (interaction.response_type === 'dict' || interaction.response_type === 'list') {
+                responseContent.textContent = JSON.stringify(interaction.response, null, 2);
+            } else {
+                responseContent.textContent = interaction.response;
+            }
+            
+            // Отображаем метаданные
+            const time = new Date(interaction.timestamp).toLocaleString();
+            promptMetadata.innerHTML = `
+                <div class="metadata-item">
+                    <span class="metadata-label">Время:</span>
+                    <span class="metadata-value">${time}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Сервис:</span>
+                    <span class="metadata-value">${interaction.service}</span>
+                </div>
+            `;
+            
+            responseMetadata.innerHTML = `
+                <div class="metadata-item">
+                    <span class="metadata-label">Тип ответа:</span>
+                    <span class="metadata-value">${interaction.response_type}</span>
+                </div>
+            `;
+            
+            if (interaction.metadata) {
+                Object.entries(interaction.metadata).forEach(([key, value]) => {
+                    responseMetadata.innerHTML += `
+                        <div class="metadata-item">
+                            <span class="metadata-label">${key}:</span>
+                            <span class="metadata-value">${JSON.stringify(value)}</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
