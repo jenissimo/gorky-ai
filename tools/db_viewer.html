@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Database Viewer</title>
+    <link rel="stylesheet" href="static/css/viewer-common.css">
+    <link rel="stylesheet" href="static/css/animations.css">
+    <link rel="stylesheet" href="static/css/db-viewer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Database Viewer</h1>
+            <div class="session-info" id="dbInfo"></div>
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <h2>Перетащите файл базы данных сюда</h2>
+            <p>или нажмите для выбора файла</p>
+            <input type="file" id="fileInput" style="display: none" accept=".db,.sqlite,.sqlite3">
+        </div>
+        
+        <div class="artifacts-list" id="artifactsList"></div>
+        
+        <div class="content-container" id="contentViewer" style="display: none;">
+            <div class="content">
+                <h3 id="contentTitle"></h3>
+                <pre id="contentBody"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация для SQL.js
+        config = {
+            locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${filename}`
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
+    <script src="static/js/db-handler.js"></script>
+    <script>
+        // Инициализируем обработчик базы данных
+        const dbHandler = new DbHandler('dropZone', 'fileInput');
+    </script>
+</body>
+</html> 
