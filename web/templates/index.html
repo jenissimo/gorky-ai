@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Книги - Gorky AI{% endblock %}
+
+{% block content %}
+<h1>Книги</h1>
+
+{% if books %}
+    <div class="list-group mt-4">
+        {% for book in books %}
+            <a href="/book/{{ book.id }}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ book.title }}</h5>
+                <small class="text-muted">ID: {{ book.id }}</small>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info mt-4">
+        Пока нет сгенерированных книг
+    </div>
+{% endif %}
+{% endblock %} 

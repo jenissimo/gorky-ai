@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Gorky AI{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Книги</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
+<h1>{{ title }}</h1>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Артефакты</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="/book/{{ book_id }}/prompt/title" class="list-group-item list-group-item-action">
+                    Название
+                </a>
+                <a href="/book/{{ book_id }}/prompt/creative_brief" class="list-group-item list-group-item-action">
+                    Creative Brief
+                </a>
+                <a href="/book/{{ book_id }}/prompt/story_outline" class="list-group-item list-group-item-action">
+                    Story Outline
+                </a>
+                <a href="/book/{{ book_id }}/prompt/story_structure" class="list-group-item list-group-item-action">
+                    Story Structure
+                </a>
+                <a href="/book/{{ book_id }}/prompt/characters" class="list-group-item list-group-item-action">
+                    Characters
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Сцены</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for scene in scenes %}
+                    <a href="/book/{{ book_id }}/scene/{{ scene.chapter }}/{{ scene.scene }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Глава {{ scene.chapter }}, Сцена {{ scene.scene }}: {{ scene.title }}</h6>
+                            <small class="text-muted">{{ scene.versions }} версий</small>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

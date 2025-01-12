@@ -1,0 +1,3 @@
+[submodule "cognistruct"]
+	path = cognistruct
+	url = https://github.com/jenissimo/cognistruct.git

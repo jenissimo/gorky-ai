@@ -3,66 +3,69 @@
 ---
 
 # Общий сюжет
-{{ story_outline }}
+{{ params.story_outline }}
 
 ---
 
 # Персонажи
-{{ character_sheets }}
+{{ params.characters }}
 
 ---
 
-{% if prev_scene_text %}
+{% if params.prev_scene_text %}
 # Контекст предыдущей сцены
-**Название:** {{ prev_scene_info.title }}
-**Описание:** {{ prev_scene_info.description }}
-**Место:** {{ prev_scene_info.location }}
-**Время:** {{ prev_scene_info.time }}
-**Действующие лица:** {{ prev_scene_info.characters | join(', ') }}
+**Название:** {{ params.prev_scene_info.title }}
+**Описание:** {{ params.prev_scene_info.description }}
+**Место:** {{ params.prev_scene_info.location }}
+**Время:** {{ params.prev_scene_info.time }}
+**Действующие лица:** {{ params.prev_scene_info.characters | join(', ') }}
 
 ## Текст предыдущей сцены
-{{ prev_scene_text }}
+{{ params.prev_scene_text }}
 
 ---
 {% endif %}
 
 # Текущая сцена
-**Глава:** {{ chapter_title }}
-**Сцена:** {{ scene_title }}
+**Глава:** {{ params.chapter.title }}
+**Сцена:** {{ params.scene.title }}
 
 ---
 
 # Драматургическая информация
-**Тип сцены:** {{ scene_info.dramatic_info.scene_type }}
-**Уровень напряжения:** {{ scene_info.dramatic_info.tension_level }}
-{% if scene_info.dramatic_info.is_turning_point %}
+**Тип сцены:** {{ params.scene.dramatic_info.scene_type }}
+**Уровень напряжения:** {{ params.scene.dramatic_info.tension_level }}
+{% if params.scene.dramatic_info.is_turning_point %}
 **Важно:** Это поворотная точка!
 {% endif %}
 
 ## Цели сцены
-{% for goal in scene_info.dramatic_info.scene_goals %}
+{% for goal in params.scene.dramatic_info.scene_goals %}
 - {{ goal }}
 {% endfor %}
 
 ## Драматические вопросы
-{% for question in scene_info.dramatic_info.dramatic_questions %}
+{% for question in params.scene.dramatic_info.dramatic_questions %}
 - {{ question }}
 {% endfor %}
 
 ## Обязательные элементы
-{% for element in scene_info.dramatic_info.required_elements %}
+{% for element in params.scene.dramatic_info.required_elements %}
 - {{ element }}
 {% endfor %}
 
 ---
 
 # Информация о сцене
-**Описание:** {{ scene_info.description }}
-**Место действия:** {{ scene_info.location }}
-**Время:** {{ scene_info.time }}
-**Действующие лица:** {{ scene_info.characters | join(', ') }}
+**Описание:** {{ params.scene.description }}
+**Место действия:** {{ params.scene.location }}
+**Время:** {{ params.scene.time }}
+**Действующие лица:** {{ params.scene.characters | join(', ') }}
 
-**Целевой размер:** {{ target_word_count }} слов
+**Начало сцены:** {{ params.scene.opening }}
+**Конец сцены:** {{ params.scene.closing }}
+
+**Целевой размер:** {{ params.target_word_count }} слов
 
 ---
 
@@ -72,13 +75,13 @@
 - Это часть главы, поэтому не нужно добавлять заголовки, разделы или примечания автора
 
 ## 2. Структура
-{% if book_size == 'very_short' %}
+{% if params.book_size == 'very_short' %}
 ### Структура очень короткой истории:
-{% if scene_info.dramatic_info.scene_type == 'setup' %}
+{% if params.scene.dramatic_info.scene_type == 'setup' %}
 - Быстро введи главных персонажей и конфликт
 - Создай яркую завязку, которая сразу захватит внимание
 - Заложи основу для развития в следующей сцене
-{% elif scene_info.dramatic_info.scene_type == 'development' %}
+{% elif params.scene.dramatic_info.scene_type == 'development' %}
 - Стремительно развивай конфликт
 - Объедини развитие с кульминацией
 - Подведи к финальному разрешению
@@ -93,17 +96,18 @@
 - Конфликт: Какие препятствия встают на пути?
 - Катастрофа: Неожиданный поворот, который меняет ситуацию
 {% endif %}
+- Следуй указанному началу и концу сцены
 
 ## 3. Элементы повествования
-{% if scene_info.dramatic_info.scene_type == 'setup' %}
+{% if params.scene.dramatic_info.scene_type == 'setup' %}
 - Начни с установки ситуации
 - Представь персонажей через действия
 - Создай основу для конфликта
-{% elif scene_info.dramatic_info.scene_type == 'development' %}
+{% elif params.scene.dramatic_info.scene_type == 'development' %}
 - Развивай существующие конфликты
 - Усложняй препятствия
 - Углубляй характеры
-{% elif scene_info.dramatic_info.scene_type == 'climax' %}
+{% elif params.scene.dramatic_info.scene_type == 'climax' %}
 - Создай пиковый момент напряжения
 - Сделай выбор неизбежным
 - Покажи решающее действие
@@ -113,26 +117,26 @@
 - Заверши открытые линии
 {% endif %}
 
-## 4. Уровень напряжения ({{ scene_info.dramatic_info.tension_level }})
-{% if scene_info.dramatic_info.tension_level == 'нарастающее' %}
+## 4. Уровень напряжения ({{ params.scene.dramatic_info.tension_level }})
+{% if params.scene.dramatic_info.tension_level == 'нарастающее' %}
 - Начни спокойно, постепенно повышая ставки
 - Добавляй намеки на будущие проблемы
 - Создавай предчувствие
-{% elif scene_info.dramatic_info.tension_level == 'высокое' %}
+{% elif params.scene.dramatic_info.tension_level == 'высокое' %}
 - Поддерживай постоянное напряжение
 - Чередуй моменты действия и затишья
 - Не давай персонажам передышки
-{% elif scene_info.dramatic_info.tension_level == 'пиковое' %}
+{% elif params.scene.dramatic_info.tension_level == 'пиковое' %}
 - Максимально обостри конфликт
 - Сделай каждое решение критически важным
 - Держи темп быстрым
 {% else %}
 - Постепенно снижай напряжение
 - Дай персонажам осмыслить произошедшее
-- {% if book_size != 'very_short' %}Подготовь почву для следующих событий{% endif %}
+- {% if params.book_size != 'very_short' %}Подготовь почву для следующих событий{% endif %}
 {% endif %}
 
-{% if scene_info.dramatic_info.is_turning_point %}
+{% if params.scene.dramatic_info.is_turning_point %}
 ## 5. Поворотная точка
 - Сделай изменение необратимым
 - Измени понимание ситуации
@@ -140,7 +144,7 @@
 {% endif %}
 
 ## 6. Атмосфера и детали
-{% if book_size == 'very_short' %}
+{% if params.book_size == 'very_short' %}
 - Используй яркие, запоминающиеся детали
 - Фокусируйся на самом важном
 - Создавай атмосферу через ключевые элементы
@@ -151,7 +155,7 @@
 {% endif %}
 
 ## 7. Диалоги и взаимодействие
-{% if book_size == 'very_short' %}
+{% if params.book_size == 'very_short' %}
 - Каждая реплика должна двигать сюжет
 - Используй короткие, но емкие диалоги
 - Показывай характеры через ключевые фразы
@@ -172,7 +176,7 @@
 - Сохраняй единство стиля
 - Используй точные и емкие описания
 - Каждое слово должно работать на историю
-{% if book_size == 'very_short' %}
+{% if params.book_size == 'very_short' %}
 - Избегай лишних деталей и отступлений
 {% endif %}
 
@@ -184,4 +188,4 @@
 
 ---
 
-Пожалуйста, напиши сцену объемом {{ target_word_count }} слов, следуя этим инструкциям и учитывая драматургическую информацию.
+Пожалуйста, напиши сцену объемом {{ params.target_word_count }} слов, следуя этим инструкциям и учитывая драматургическую информацию.

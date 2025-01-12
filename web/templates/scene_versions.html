@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Сцена {{ chapter_num }}.{{ scene_num }} - Gorky AI{% endblock %}
+
+{% block head %}
+<style>
+.version-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.version-comparison pre {
+    white-space: pre-wrap;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    min-height: 200px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.version-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.version-controls select {
+    flex: 1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Книги</a></li>
+        <li class="breadcrumb-item"><a href="/book/{{ book_id }}">{{ title }}</a></li>
+        <li class="breadcrumb-item active">Сцена {{ chapter_num }}.{{ scene_num }}</li>
+    </ol>
+</nav>
+
+<h1>Сцена {{ chapter_num }}.{{ scene_num }}</h1>
+
+<div class="version-controls">
+    <select class="form-select" id="version1" onchange="compareVersions()">
+        {% for version in versions %}
+            <option value="{{ loop.index0 }}">Версия {{ loop.index }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-outline-primary" onclick="togglePrompt('version1-prompt')">
+        Показать промпт
+    </button>
+</div>
+
+<div class="version-controls">
+    <select class="form-select" id="version2" onchange="compareVersions()">
+        {% for version in versions %}
+            <option value="{{ loop.index0 }}" {% if loop.last %}selected{% endif %}>Версия {{ loop.index }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-outline-primary" onclick="togglePrompt('version2-prompt')">
+        Показать промпт
+    </button>
+</div>
+
+<div class="version-comparison">
+    <div>
+        <h5>Версия <span id="version1-num"></span></h5>
+        <pre id="version1-text"></pre>
+    </div>
+    <div>
+        <h5>Версия <span id="version2-num"></span></h5>
+        <pre id="version2-text"></pre>
+    </div>
+</div>
+
+<script>
+const versions = {{ versions|tojson }};
+
+function compareVersions() {
+    const v1 = document.getElementById('version1').value;
+    const v2 = document.getElementById('version2').value;
+    
+    document.getElementById('version1-num').textContent = parseInt(v1) + 1;
+    document.getElementById('version2-num').textContent = parseInt(v2) + 1;
+    
+    let text1 = versions[v1].value;
+    let text2 = versions[v2].value;
+    
+    // Очищаем примечания редактора
+    // text1 = cleanEditorNotes(text1);
+    // text2 = cleanEditorNotes(text2);
+    
+    document.getElementById('version1-text').textContent = text1;
+    document.getElementById('version2-text').textContent = text2;
+}
+
+function togglePrompt(promptId) {
+    const versionNum = promptId.split('-')[0];  // version1 или version2
+    const textElement = document.getElementById(`${versionNum}-text`);
+    const button = event.target;
+    const versionIdx = document.getElementById(versionNum).value;
+    
+    if (button.textContent.trim() === 'Показать промпт') {
+        // Показываем промпт
+        const prompt = versions[versionIdx].metadata?.prompt || 'Промпт недоступен';
+        textElement.textContent = prompt;
+        button.textContent = 'Показать текст';
+    } else {
+        // Возвращаем текст сцены
+        textElement.textContent = versions[versionIdx].value;
+        button.textContent = 'Показать промпт';
+    }
+}
+
+function cleanEditorNotes(text) {
+    if (!text) return '';
+    
+    const startMarker = "===== ИЗМЕНЕНИЯ =====";
+    const endMarker = "====================";
+    
+    if (text.includes(startMarker)) {
+        const startIdx = text.indexOf(startMarker);
+        const endIdx = text.indexOf(endMarker, startIdx);
+        
+        if (endIdx !== -1) {
+            let cleanedText = text.substring(0, startIdx).trim() + 
+                            text.substring(endIdx + endMarker.length).trim();
+            return cleanedText;
+        }
+    }
+    
+    return text.trim();
+}
+
+// Инициализируем сравнение
+compareVersions();
+</script>
+{% endblock %} 

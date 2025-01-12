@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Артефакт {{ artifact_path }} - Gorky AI{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Книги</a></li>
+        <li class="breadcrumb-item"><a href="/book/{{ book_id }}">Книга {{ book_id }}</a></li>
+        <li class="breadcrumb-item active">{{ artifact_path }}</li>
+    </ol>
+</nav>
+
+<h1>{{ artifact_path }}</h1>
+
+<div class="prompt-response">
+    <div>
+        <h4>Промпт:</h4>
+        <pre>{{ prompt }}</pre>
+    </div>
+    
+    <div>
+        <h4>Ответ:</h4>
+        <pre id="response">{{ response }}</pre>
+    </div>
+</div>
+
+<script>
+// Функция для форматирования JSON с подсветкой синтаксиса
+function formatJSON(json) {
+    if (typeof json === 'string') {
+        try {
+            json = JSON.parse(json);
+        } catch (e) {
+            return json;
+        }
+    }
+    
+    const formatted = JSON.stringify(json, null, 2);
+    return formatted.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+            } else {
+                cls = 'json-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+// Пытаемся отформатировать ответ как JSON
+const responseElement = document.getElementById('response');
+const response = responseElement.textContent;
+
+try {
+    // Пробуем распарсить как JSON
+    JSON.parse(response);
+    // Если успешно, форматируем с подсветкой
+    responseElement.innerHTML = formatJSON(response);
+} catch (e) {
+    // Если не JSON, оставляем как есть
+    console.log('Response is not JSON, leaving as plain text');
+}
+</script>
+{% endblock %} 

@@ -1,3 +1,5 @@
 openai
 requests
-Jinja2
+Jinja2>=3.0.1
+fastapi>=0.68.0
+uvicorn>=0.15.0

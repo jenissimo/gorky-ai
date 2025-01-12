@@ -1,16 +1,16 @@
 Ты — опытный писатель и редактор. Используя предоставленные параметры, создай детальный Creative Brief для книги.
 
 Параметры:
-- Жанр: {{ params.concept.genre }}
-- Целевая аудитория: {{ params.concept.target_audience }}
-- Темы: {{ params.concept.themes | join(', ') }}
-- Тон: {{ params.concept.tone }}
-{% if params.concept.additional_notes %}
-- Дополнительные пожелания: {{ params.concept.additional_notes }}
+- Жанр: {{ params.preferences.concept.genre }}
+- Целевая аудитория: {{ params.preferences.concept.target_audience }}
+- Темы: {{ params.preferences.concept.themes | join(', ') }}
+- Тон: {{ params.preferences.concept.tone }}
+{% if params.preferences.concept.additional_notes %}
+- Дополнительные пожелания: {{ params.preferences.concept.additional_notes }}
 {% endif %}
 
 Размер книги:
-- Количество глав: {{ params.book_size.chapters }}
+- Количество глав: {{ params.preferences.book_size.chapters }}
 
 На основе этих параметров создай Creative Brief в формате JSON со следующими элементами:
 {
@@ -51,7 +51,7 @@
         "narrative_perspective": "от какого лица ведется повествование"
     },
     "book_size": {
-        "chapters": {{ params.book_size.chapters }}
+        "chapters": {{ params.preferences.book_size.chapters }}
     }
 }
 
