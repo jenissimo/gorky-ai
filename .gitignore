@@ -59,3 +59,7 @@ htmlcov/
 output/
 book_generator.db
 book_generator.log
+.DS_Store
+
+data/*.db
+*.db-journal
